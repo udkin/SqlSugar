@@ -396,6 +396,16 @@ namespace SqlSugar
             }
             CheckConnect();
             SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
+            #region 解决DataReader关闭时连接不关闭的BUG，开启事务时不关闭连接由事务控制连接状态
+            if (_tran != null)
+            {
+                sqlDataReader = sqlCommand.ExecuteReader();
+            }
+            else
+            {
+                sqlDataReader = sqlCommand.ExecuteReader(CommandBehavior.CloseConnection);
+            }
+            #endregion
             if (this.IsClearParameters)
                 sqlCommand.Parameters.Clear();
             ExecLogEvent(sql, pars, false);
