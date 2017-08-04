@@ -97,9 +97,17 @@ namespace SqlSugar
                 string cacheKey = "SqlSugarClient.InitAttributes";
                 var cm = CacheManager<List<KeyValue>>.GetInstance();
                 var tFieldNames = typeof(T).GetProperties().Select(it => it.Name).ToList();
+                var properties = type.GetProperties();
                 for (int i = 0; i < dataRecord.FieldCount; i++)
                 {
                     string dbFieldName = dataRecord.GetName(i);
+                    
+                    //解决因实体类的字段名与数据库表字段名不一致引发的异常，使用场景数据库表增减字段不影响程序运行
+                    if(!properties.Any(it => it.Name.ToLower() == dbFieldName.ToLower()))
+                    {
+                        continue;
+                    }
+                    
                     if (cm.ContainsKey(cacheKey) && cm[cacheKey].Any(it => it.Value == dbFieldName))
                     {
                         var classFieldName= cm[cacheKey].Single(it => it.Value == dbFieldName).Key;
